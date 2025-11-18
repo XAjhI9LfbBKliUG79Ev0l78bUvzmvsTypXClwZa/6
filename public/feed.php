@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../src/init.php';
-require_once __DIR__ . '/../src/news.php';
+require_once __DIR__ . '/../public/news.php';
 
 if (!isset($_SESSION['user'])) {
     header('Location: index.php');
