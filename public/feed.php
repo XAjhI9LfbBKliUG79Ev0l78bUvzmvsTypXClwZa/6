@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../src/init.php';
-require_once __DIR__ . '/../public/news.php';
 
 if (!isset($_SESSION['user'])) {
     header('Location: index.php');
@@ -31,14 +30,8 @@ require __DIR__ . '/../src/templates/header.php';
             <a href="feed.php"><?= __('update_button') ?></a>
         </div>
 
-        <?php foreach (array_reverse($news_posts) as $post): ?>
-            <article class="post">
-                <h2><?= htmlspecialchars($post['title']) ?></h2>
-                <p><?= nl2br(htmlspecialchars($post['content'])) ?></p>
-                <small class="post-meta"><?= __('published_on') ?>: <?= htmlspecialchars($post['published_at']) ?></small>
-            </article>
-        <?php endforeach; ?>
     </div>
 </main>
+<script src="/assets/js/feed.js"></script>
 </body>
 </html>
