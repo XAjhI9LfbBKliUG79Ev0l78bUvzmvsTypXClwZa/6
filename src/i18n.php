@@ -53,6 +53,13 @@ $translations = [
         'cookies_info' => 'Информация о Cookies',
         'last_visited' => 'Последний визит',
         'published_on' => 'Опубликовано',
+        'view_button' => 'просмотреть',
+        'sort_by' => 'Сортировать по',
+        'newest' => 'Новые',
+        'oldest' => 'Старые',
+        'recently_viewed' => 'Недавно просмотренные',
+        'loading' => 'Загрузка...',
+        'viewed_post_id' => 'Просмотренный пост',
     ],
     'en' => [
         'app_title' => 'Classmates',
