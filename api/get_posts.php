@@ -11,7 +11,18 @@ foreach ($files as $file) {
     }
     $filepath = $posts_dir . '/' . $file;
     $data = file_get_contents($filepath);
-    list($uuid, $title, $content, $post_time, $viewed_state) = explode(';', $data, 5);
+    $post_data = explode(';', $data, 5);
+
+    if (count($post_data) !== 5) {
+        continue;
+    }
+
+    list($uuid, $title, $content, $post_time, $viewed_state) = $post_data;
+
+    if (empty($uuid) || empty($title) || empty($content) || empty($post_time)) {
+        continue;
+    }
+
     $posts[] = [
         'id' => $uuid,
         'title' => $title,

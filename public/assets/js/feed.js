@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     const feedContent = document.querySelector('.feed-content');
+    const viewedPostsList = document.querySelector('.viewed-posts ul');
     let isLoading = false;
     let page = 1;
     const initialLimit = 5;
     const subsequentLimit = 3;
-    let viewedPosts = new Set(getCookie('viewed_posts')?.split(',') || []);
+    const VIEWED_POSTS_LIMIT = 10;
+    let viewedPosts = getCookie('viewed_posts')?.split(',').filter(Boolean) || [];
 
     function getCookie(name) {
         const value = `; ${document.cookie}`;
@@ -22,22 +24,51 @@ document.addEventListener('DOMContentLoaded', function () {
         document.cookie = name + "=" + (value || "") + expires + "; path=/";
     }
 
-    function markPostAsViewed(postId) {
-        if (!viewedPosts.has(postId)) {
-            viewedPosts.add(postId);
-            setCookie('viewed_posts', Array.from(viewedPosts).join(','), 365);
-            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-            if(postElement){
-                postElement.classList.add('viewed');
-            }
+    function loadViewedPostsHistory() {
+        if (viewedPosts.length > 0 && viewedPostsList) {
+            fetch(`/api/get_post_details.php?ids=${viewedPosts.join(',')}`)
+                .then(response => response.json())
+                .then(posts => {
+                    viewedPostsList.innerHTML = '';
+                    posts.forEach(post => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = post.title;
+                        viewedPostsList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading viewed posts history:', error);
+                });
         }
+    }
+
+    function markPostAsViewed(postElement) {
+        const postId = postElement.dataset.postId;
+
+        if (viewedPosts[0] === postId) {
+            return;
+        }
+
+        const existingIndex = viewedPosts.indexOf(postId);
+        if (existingIndex > -1) {
+            viewedPosts.splice(existingIndex, 1);
+        }
+
+        viewedPosts.unshift(postId);
+
+        if (viewedPosts.length > VIEWED_POSTS_LIMIT) {
+            viewedPosts.pop();
+        }
+
+        setCookie('viewed_posts', viewedPosts.join(','), 365);
+        postElement.classList.add('viewed');
+        loadViewedPostsHistory();
     }
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const postId = entry.target.dataset.postId;
-                markPostAsViewed(postId);
+                markPostAsViewed(entry.target);
                 observer.unobserve(entry.target);
             }
         });
@@ -56,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const article = document.createElement('article');
                         article.classList.add('post');
                         article.dataset.postId = post.id;
-                        if(viewedPosts.has(post.id)){
+                        if(viewedPosts.includes(post.id)){
                            article.classList.add('viewed');
                         }
 
@@ -87,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    loadViewedPostsHistory();
     loadPosts(initialLimit);
 
     window.addEventListener('scroll', () => {
