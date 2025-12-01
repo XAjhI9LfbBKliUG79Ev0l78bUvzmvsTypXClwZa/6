@@ -10,6 +10,7 @@ class User {
     public $newsletter;
     public $profile_image;
     public $remember_token_hash;
+    public $viewed_posts;
 
     public function __construct($data = []) {
         $this->login = $data['login'] ?? null;
@@ -21,6 +22,7 @@ class User {
         $this->newsletter = $data['newsletter'] ?? '0';
         $this->profile_image = $data['profile_image'] ?? '';
         $this->remember_token_hash = $data['remember_token_hash'] ?? '';
+        $this->viewed_posts = $data['viewed_posts'] ?? [];
     }
 
     public static function find_by_login($login) {
@@ -44,19 +46,38 @@ class User {
     }
 
     public function save() {
-        $users = self::get_all();
+        $lines = file_exists(USERS_FILE) ? file(USERS_FILE, FILE_IGNORE_NEW_LINES) : [];
+        if ($lines === false) {
+            $lines = [];
+        }
         $user_found = false;
-        foreach ($users as $i => $user) {
-            if ($user->login === $this->login) {
-                $users[$i] = $this;
+
+        $new_line = implode(';', [
+            $this->login,
+            $this->password_hash,
+            $this->email,
+            $this->lastname,
+            $this->firstname,
+            $this->patronymic,
+            $this->newsletter,
+            $this->profile_image,
+            $this->remember_token_hash,
+            implode(',', $this->viewed_posts)
+        ]);
+
+        foreach ($lines as $i => $line) {
+            $data = explode(';', $line);
+            if ($data[0] === $this->login) {
+                $lines[$i] = $new_line;
                 $user_found = true;
                 break;
             }
         }
+
         if (!$user_found) {
-            $users[] = $this;
+            $lines[] = $new_line;
         }
-        self::save_all($users);
+        file_put_contents(USERS_FILE, implode(PHP_EOL, $lines) . PHP_EOL, LOCK_EX);
     }
 
     public static function get_all() {
@@ -76,7 +97,8 @@ class User {
                 'patronymic' => $data[5] ?? '',
                 'newsletter' => $data[6] ?? '0',
                 'profile_image' => $data[7] ?? '',
-                'remember_token_hash' => $data[8] ?? ''
+                'remember_token_hash' => $data[8] ?? '',
+                'viewed_posts' => isset($data[9]) && $data[9] !== '' ? explode(',', $data[9]) : []
             ]);
         }
         return $users;
@@ -94,7 +116,8 @@ class User {
                 $user->patronymic,
                 $user->newsletter,
                 $user->profile_image,
-                $user->remember_token_hash
+                $user->remember_token_hash,
+                implode(',', $user->viewed_posts)
             ]);
         }
         file_put_contents(USERS_FILE, implode(PHP_EOL, $lines) . PHP_EOL, LOCK_EX);
