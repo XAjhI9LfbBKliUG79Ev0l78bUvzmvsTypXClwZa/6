@@ -42,9 +42,6 @@ $last_visited = $_COOKIE['last_visited'] ?? null;
         <div class="user-info">
             <div class="user-details">
                 <span><?= __('greeting') ?>, <?= htmlspecialchars($user['login']) ?>!</span>
-                <?php if ($last_visited): ?>
-                    <small class="last-visited"><?= __('last_visited') ?>: <?= htmlspecialchars($last_visited) ?></small>
-                <?php endif; ?>
             </div>
             <img src="/<?= htmlspecialchars($profile_image) ?>" alt="Аватар" class="user-avatar">
             <a href="/profile.php" class="settings-link <?= ($active_page === 'profile') ? 'active' : '' ?>" title="<?= __('profile_settings_link') ?>">

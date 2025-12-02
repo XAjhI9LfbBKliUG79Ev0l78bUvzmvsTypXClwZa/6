@@ -148,24 +148,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Initialization ---
     function initializeFeed() {
-        const handleAnonymousUser = () => {
-            isLoggedIn = false;
+        if (typeof window.isUserLoggedIn !== 'undefined') {
+            isLoggedIn = window.isUserLoggedIn;
+        }
+
+        if (isLoggedIn) {
+            loadViewedPostsHistory();
+            loadPosts(initialLimit);
+        } else {
             viewedPostsCookie = getCookie('viewed_posts')?.split(',').filter(Boolean) || [];
             loadViewedPostsHistory();
             loadPosts(initialLimit);
-        };
-
-        fetch('/api/get_viewed_post_ids.php')
-            .then(response => {
-                if (response.ok) {
-                    isLoggedIn = true;
-                    loadViewedPostsHistory();
-                    loadPosts(initialLimit);
-                } else {
-                    handleAnonymousUser();
-                }
-            })
-            .catch(handleAnonymousUser);
+        }
     }
 
     initializeFeed();

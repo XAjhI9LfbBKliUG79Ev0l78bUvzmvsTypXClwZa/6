@@ -26,6 +26,9 @@
     </div>
 
 </main>
+<script>
+    window.isUserLoggedIn = <?= isset($_SESSION['user']) ? 'true' : 'false' ?>;
+</script>
 <script src="/assets/js/feed.js"></script>
 </body>
 </html>
