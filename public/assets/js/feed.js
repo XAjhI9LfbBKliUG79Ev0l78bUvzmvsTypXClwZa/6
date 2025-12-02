@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (isLoggedIn) {
             // Logged-in: fetch from server
-            postIdsPromise = fetch('/api/get_viewed_post_ids.php')
+            postIdsPromise = fetch('/api/posts.php?action=get_viewed_post_ids')
                 .then(response => {
                     if (!response.ok) return [];
                     return response.json();
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         postIdsPromise.then(postIds => {
             if (postIds.length > 0) {
-                fetch(`/api/get_post_details.php?ids=${postIds.join(',')}`)
+                fetch(`/api/posts.php?action=get_post_details&ids=${postIds.join(',')}`)
                     .then(response => response.json())
                     .then(posts => {
                         viewedPostsList.innerHTML = '';
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (isLoggedIn) {
             // Logged-in: send to server
-            fetch('/api/mark_post_as_viewed.php', {
+            fetch('/api/posts.php?action=mark_post_as_viewed', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ postId: postId })
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isLoading) return;
         isLoading = true;
 
-        fetch(`/api/get_posts.php?page=${page}&limit=${limit}`)
+        fetch(`/api/posts.php?action=get_posts&page=${page}&limit=${limit}`)
             .then(response => response.json())
             .then(posts => {
                 if (posts.length > 0) {
