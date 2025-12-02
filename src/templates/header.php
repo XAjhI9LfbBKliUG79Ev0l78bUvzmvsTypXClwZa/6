@@ -40,6 +40,14 @@ $last_visited = $_COOKIE['last_visited'] ?? null;
         </form>
 
         <div class="user-info">
+            <div class="viewed-posts-container">
+                <a href="#" class="viewed-posts-button">Viewed Posts</a>
+                <div class="viewed-posts-dropdown">
+                    <ul>
+                        <!-- Viewed posts will be populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
             <div class="user-details">
                 <span><?= __('greeting') ?>, <?= htmlspecialchars($user['login']) ?>!</span>
             </div>

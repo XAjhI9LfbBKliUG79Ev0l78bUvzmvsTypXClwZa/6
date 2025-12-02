@@ -1,10 +1,10 @@
 window.addEventListener('load', function () {
     const feedContent = document.querySelector('.feed-content');
-    const viewedPostsList = document.querySelector('.viewed-posts ul');
+    const viewedPostsList = document.querySelector('.viewed-posts-dropdown ul');
     let isLoading = false;
     let page = 1;
-    const initialLimit = 5;
-    const subsequentLimit = 5;
+    const initialLimit = 10;
+    const subsequentLimit = 10;
     const VIEWED_POSTS_LIMIT = 10;
 
     let isLoggedIn = false;
@@ -25,6 +25,21 @@ window.addEventListener('load', function () {
             expires = "; expires=" + date.toUTCString();
         }
         document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    function createViewedPostElement(post) {
+        const listItem = document.createElement('li');
+        listItem.classList.add('post');
+
+        const title = document.createElement('h4');
+        title.textContent = post.title;
+
+        const meta = document.createElement('small');
+        meta.textContent = `Published on: ${post.published_at}`;
+
+        listItem.appendChild(title);
+        listItem.appendChild(meta);
+        return listItem;
     }
 
     // --- History loading logic ---
@@ -48,15 +63,14 @@ window.addEventListener('load', function () {
                 fetch(`/api/posts.php?action=get_post_details&ids=${postIds.join(',')}`)
                     .then(response => response.json())
                     .then(posts => {
-                        viewedPostsList.innerHTML = '';
+                        viewedPostsList.innerHTML = ''; // Clear previous entries
                         posts.forEach(post => {
-                            const postElement = createPostElement(post);
-                            postElement.classList.add('viewed');
+                            const postElement = createViewedPostElement(post);
                             viewedPostsList.appendChild(postElement);
                         });
                     }).catch(error => console.error('Error fetching post details:', error));
             } else if (viewedPostsList) {
-                viewedPostsList.innerHTML = '';
+                viewedPostsList.innerHTML = '<li>No viewed posts yet.</li>';
             }
         }).catch(error => console.error('Error resolving post IDs:', error));
     }
@@ -67,8 +81,6 @@ window.addEventListener('load', function () {
         if (postElement.classList.contains('viewed')) return;
 
         postElement.classList.add('viewed');
-        viewedPostsList.appendChild(postElement);
-        // We need to refetch the history to get the correct order
         loadViewedPostsHistory();
 
         if (isLoggedIn) {
@@ -142,9 +154,13 @@ window.addEventListener('load', function () {
                     posts.forEach(post => {
                         const postElement = createPostElement(post);
                         feedContent.appendChild(postElement);
-                        observer.observe(postElement);
+                        if (!post.viewed) {
+                            observer.observe(postElement);
+                        }
                     });
                     page++;
+                } else {
+                    loadMoreButton.style.display = 'none'; // Hide button if no more posts
                 }
                 isLoading = false;
             })
@@ -155,6 +171,7 @@ window.addEventListener('load', function () {
     }
 
     // --- Initialization ---
+    const loadMoreButton = document.createElement('button');
     function initializeFeed() {
         if (typeof window.isUserLoggedIn !== 'undefined') {
             isLoggedIn = window.isUserLoggedIn;
@@ -168,12 +185,11 @@ window.addEventListener('load', function () {
             loadViewedPostsHistory();
             loadPosts(initialLimit);
         }
+
+        loadMoreButton.textContent = 'Load More';
+        loadMoreButton.addEventListener('click', () => loadPosts(subsequentLimit));
+        feedContent.insertAdjacentElement('afterend', loadMoreButton);
     }
 
     initializeFeed();
-
-    const loadMoreButton = document.createElement('button');
-    loadMoreButton.textContent = 'Load More';
-    loadMoreButton.addEventListener('click', () => loadPosts(subsequentLimit));
-    feedContent.insertAdjacentElement('afterend', loadMoreButton);
 });

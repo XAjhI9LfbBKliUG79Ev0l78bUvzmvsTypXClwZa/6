@@ -7,6 +7,11 @@ $action = $_GET['action'] ?? null;
 switch ($action) {
     case 'get_posts':
         $all_posts = Post::get_all();
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 5;
+        $offset = ($page - 1) * $limit;
+
+        $paginated_posts = array_slice($all_posts, $offset, $limit);
 
         $viewed_post_ids = [];
         if ($user) {
@@ -15,15 +20,10 @@ switch ($action) {
             $viewed_post_ids = isset($_COOKIE['viewed_posts']) ? explode(',', $_COOKIE['viewed_posts']) : [];
         }
 
-        $unread_posts = array_filter($all_posts, function ($post) use ($viewed_post_ids) {
-            return !in_array($post['id'], $viewed_post_ids);
-        });
-
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 5;
-        $offset = ($page - 1) * $limit;
-
-        $paginated_posts = array_slice(array_values($unread_posts), $offset, $limit);
+        foreach ($paginated_posts as &$post) {
+            $post['viewed'] = in_array($post['id'], $viewed_post_ids);
+        }
+        unset($post); // Unset reference
 
         echo json_encode($paginated_posts, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         break;

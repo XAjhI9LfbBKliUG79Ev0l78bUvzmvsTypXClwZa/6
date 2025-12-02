@@ -20,12 +20,6 @@
             <!-- Posts will be loaded here by JavaScript -->
         </div>
 
-        <aside class="viewed-posts">
-            <h2>Viewed Posts</h2>
-            <ul>
-                <!-- Viewed posts will be loaded here by JavaScript -->
-            </ul>
-        </aside>
     </div>
 
 </main>
