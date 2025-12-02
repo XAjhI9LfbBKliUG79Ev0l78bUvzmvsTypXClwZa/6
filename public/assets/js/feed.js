@@ -4,7 +4,7 @@ window.addEventListener('load', function () {
     let isLoading = false;
     let page = 1;
     const initialLimit = 5;
-    const subsequentLimit = 3;
+    const subsequentLimit = 5;
     const VIEWED_POSTS_LIMIT = 10;
 
     let isLoggedIn = false;
@@ -50,9 +50,9 @@ window.addEventListener('load', function () {
                     .then(posts => {
                         viewedPostsList.innerHTML = '';
                         posts.forEach(post => {
-                            const listItem = document.createElement('li');
-                            listItem.textContent = post.title;
-                            viewedPostsList.appendChild(listItem);
+                            const postElement = createPostElement(post);
+                            postElement.classList.add('viewed');
+                            viewedPostsList.appendChild(postElement);
                         });
                     }).catch(error => console.error('Error fetching post details:', error));
             } else if (viewedPostsList) {
@@ -67,6 +67,9 @@ window.addEventListener('load', function () {
         if (postElement.classList.contains('viewed')) return;
 
         postElement.classList.add('viewed');
+        viewedPostsList.appendChild(postElement);
+        // We need to refetch the history to get the correct order
+        loadViewedPostsHistory();
 
         if (isLoggedIn) {
             // Logged-in: send to server
@@ -105,6 +108,29 @@ window.addEventListener('load', function () {
     }, { threshold: 0.5 });
 
     // --- Infinite scroll loader ---
+    function createPostElement(post) {
+        const article = document.createElement('article');
+        article.classList.add('post');
+        article.dataset.postId = post.id;
+        if (post.viewed) {
+            article.classList.add('viewed');
+        }
+
+        const title = document.createElement('h2');
+        title.textContent = post.title;
+        const content = document.createElement('p');
+        content.innerHTML = post.content;
+        const meta = document.createElement('small');
+        meta.classList.add('post-meta');
+        meta.textContent = `Published on: ${post.published_at}`;
+
+        article.appendChild(title);
+        article.appendChild(content);
+        article.appendChild(meta);
+
+        return article;
+    }
+
     function loadPosts(limit) {
         if (isLoading) return;
         isLoading = true;
@@ -114,27 +140,9 @@ window.addEventListener('load', function () {
             .then(posts => {
                 if (posts.length > 0) {
                     posts.forEach(post => {
-                        const article = document.createElement('article');
-                        article.classList.add('post');
-                        article.dataset.postId = post.id;
-                        if(post.viewed){
-                           article.classList.add('viewed');
-                        }
-
-                        const title = document.createElement('h2');
-                        title.textContent = post.title;
-                        const content = document.createElement('p');
-                        content.innerHTML = post.content;
-                        const meta = document.createElement('small');
-                        meta.classList.add('post-meta');
-                        meta.textContent = `Published on: ${post.published_at}`;
-
-                        article.appendChild(title);
-                        article.appendChild(content);
-                        article.appendChild(meta);
-
-                        feedContent.appendChild(article);
-                        observer.observe(article);
+                        const postElement = createPostElement(post);
+                        feedContent.appendChild(postElement);
+                        observer.observe(postElement);
                     });
                     page++;
                 }
@@ -164,9 +172,8 @@ window.addEventListener('load', function () {
 
     initializeFeed();
 
-    window.addEventListener('scroll', () => {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
-            loadPosts(subsequentLimit);
-        }
-    });
+    const loadMoreButton = document.createElement('button');
+    loadMoreButton.textContent = 'Load More';
+    loadMoreButton.addEventListener('click', () => loadPosts(subsequentLimit));
+    feedContent.insertAdjacentElement('afterend', loadMoreButton);
 });
