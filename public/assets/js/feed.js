@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+window.addEventListener('load', function () {
     const feedContent = document.querySelector('.feed-content');
     const viewedPostsList = document.querySelector('.viewed-posts ul');
     let isLoading = false;
