@@ -1,5 +1,8 @@
 <?php require __DIR__ . '/../templates/header.php'; ?>
 <style>
+    .post {
+        margin-bottom: 20px;
+    }
     .post.viewed {
         opacity: 0.5;
     }
